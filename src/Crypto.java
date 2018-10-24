@@ -9,6 +9,7 @@ public class Crypto {
     //.....................STEPS  FOR ENCRYPT A MESSAGE.....................
 
     final static String ALPHABET="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    final static String NUMBER="0123456789";
     /**
      * Step 1
      * This method returns normalized message
@@ -17,7 +18,7 @@ public class Crypto {
      */
     public static String normalizeText(String message){
         String normalizedMessage="";
-        normalizedMessage=message.replaceAll("[^A-z]","").toUpperCase();
+        normalizedMessage=message.toUpperCase();
         return normalizedMessage;
     }
 
@@ -51,14 +52,34 @@ public class Crypto {
      */
     public static String caeserify(String obifiedMessage,int shift) {
         String cipherText="";
+        int getPos=0,keyVal=0,replaceVal=0;
+        char c;
         for(int i=0;i<obifiedMessage.length();i++){
-            int getPos=ALPHABET.indexOf(obifiedMessage.charAt(i));
-            int keyVal=(getPos+shift)%26;
-            if(keyVal<0){
-                keyVal= ALPHABET.length()+keyVal;
+            getPos = obifiedMessage.charAt(i);
+            if(getPos==32){
+                replaceVal='_';
             }
-            int replaceVal=ALPHABET.charAt(keyVal);
-            char c=(char)replaceVal;
+            else {
+                getPos = ALPHABET.indexOf(obifiedMessage.charAt(i));
+                if (getPos < 0) {
+                    getPos = NUMBER.indexOf(obifiedMessage.charAt(i));
+                    if (getPos < 0)
+                        replaceVal = (int) obifiedMessage.charAt(i);
+                    else {
+                        keyVal = (getPos + shift) % 10;
+                        if (keyVal < 0)
+                            keyVal = NUMBER.length() + keyVal;
+                        replaceVal = NUMBER.charAt(keyVal);
+                    }
+                } else {
+                    keyVal = (getPos + shift) % 26;
+                    if (keyVal < 0) {
+                        keyVal = ALPHABET.length() + keyVal;
+                    }
+                    replaceVal = ALPHABET.charAt(keyVal);
+                }
+            }
+            c=(char)replaceVal;
             cipherText+=c;
         }
         return cipherText;
@@ -100,9 +121,13 @@ public class Crypto {
      */
     public static String encryptString(String message,int shift,int group){
         String a=normalizeText(message);
+        System.out.println("Normalize: "+a);
         String j=obify(a);
+        System.out.println("Obified: "+j);
         String o=caeserify(j,shift);
+        System.out.println("Caeserfied: "+o);
         String y=groupify(o,group);
+        System.out.println("Groupified: "+y);
         return y;
     }
 
@@ -152,9 +177,12 @@ public class Crypto {
      */
     public static String decryptString(String encryptedMsg,int shift){
         String a=ungroupify(encryptedMsg);
+        System.out.println("\nUngroupified: "+a);
         String j=decaeserify(a,shift);
+        System.out.println("Decaeserified: "+j);
         String o=unobify(j);
-        String y=o;
+        System.out.println("Unobified: "+a);
+        String y=o.replace('_',' ').toLowerCase();
         return y;
     }
 
@@ -170,9 +198,9 @@ public class Crypto {
         BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
         System.out.print("Enter any message: ");
         String msg=br.readLine();
-        String encryptedMsg=encryptString(msg,1,4);
+        String encryptedMsg=encryptString(msg,16,3);
         System.out.println("Encrypted Message: "+encryptedMsg);
-        String decryptedMsg=decryptString(encryptedMsg,1);
+        String decryptedMsg=decryptString(encryptedMsg,16);
         System.out.print("Decrypted Message: "+decryptedMsg);
     }
 }
